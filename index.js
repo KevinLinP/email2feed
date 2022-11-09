@@ -84,6 +84,56 @@ async function listLabels(auth) {
   labels.forEach((label) => {
     console.log(`- ${label.name}`);
   });
+
+  const pragmaticEngineerLabel = labels.find((l) => l.name === 'Pragmatic Engineer')
+  console.log(pragmaticEngineerLabel);
 }
 
-authorize().then(listLabels).catch(console.error);
+async function listMessages(auth) {
+  const gmail = google.gmail({version: 'v1', auth});
+  const res = await gmail.users.messages.list({
+    userId: 'me',
+    maxResults: 10,
+    labelIds: ['Label_6517139861107061001']
+  });
+
+  return res.data.messages
+}
+
+async function fetchMessage({auth, id}) {
+  const gmail = google.gmail({version: 'v1', auth});
+  const res = await gmail.users.messages.get({
+    userId: 'me',
+    id
+  });
+
+  return res.data;
+}
+
+async function fetchMessages({messageIds, auth}) {
+  const promises = messageIds.map(({id}) => fetchMessage({auth, id}));
+  const messages = await Promise.all(promises);
+
+  return messages;
+}
+
+async function run() {
+  const auth = await authorize();
+  // listLabels(auth)
+  const messageIds = await listMessages(auth)
+  // console.log(messageIds);
+  const messages = await fetchMessages({messageIds, auth})
+
+  const message = messages[0];
+  console.log(message)
+  console.log(message.payload.headers)
+
+  const parts = message.payload.parts 
+  console.log(parts)
+  const htmlPart = parts.find((p) => p.mimeType === 'text/html')
+  console.log(htmlPart.headers);
+  const htmlBody = Buffer.from(htmlPart.body.data, 'base64').toString('utf-8');
+  console.log(htmlBody);
+}
+
+run();
