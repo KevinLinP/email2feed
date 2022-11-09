@@ -4,6 +4,8 @@ import process from 'process';
 import {authenticate} from '@google-cloud/local-auth';
 import {google} from 'googleapis';
 
+import {getDb} from './firestore-client.js';
+
 const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 const TOKEN_PATH = path.join(process.cwd(), 'secrets/token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'secrets/credentials.json');
@@ -31,8 +33,25 @@ async function saveCredentials(client) {
   await fs.writeFile(TOKEN_PATH, payload);
 }
 
+async function loadSavedCredentials() {
+  const db = getDb();
+
+  let data = null;
+
+  const snapshot = await db.collection('oauthTokens').get();
+  snapshot.forEach((doc) => {
+    // console.log(doc.id, '=>', doc.data());
+    data = doc.data();
+  });
+
+  console.log(data)
+
+  return google.auth.fromJSON(data);
+}
+
 export async function getAuth() {
-  let client = await loadSavedCredentialsIfExist();
+  let client = await loadSavedCredentials();
+
   if (client) {
     return client;
   }
