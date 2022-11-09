@@ -1,6 +1,7 @@
 {
   "name": "email2rss",
   "version": "0.8.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
