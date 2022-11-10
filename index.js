@@ -50,21 +50,25 @@ async function fetchMessages({messageIds, auth}) {
 
 async function run() {
   const auth = await getAuth();
-  listLabels(auth)
-  // const messageIds = await listMessages(auth)
+  // listLabels(auth)
+  const messageIds = await listMessages(auth)
   // // console.log(messageIds);
-  // const messages = await fetchMessages({messageIds, auth})
+  const messages = await fetchMessages({messageIds, auth})
 
-  // const message = messages[0];
-  // console.log(message)
-  // console.log(message.payload.headers)
+  messages.forEach((message) => {
+    const headers = {}
+    message.payload.headers.forEach((header) => {
+      headers[header.name] = header.value;
+    })
+    console.log(headers["Subject"]);
 
-  // const parts = message.payload.parts 
-  // console.log(parts)
-  // const htmlPart = parts.find((p) => p.mimeType === 'text/html')
-  // console.log(htmlPart.headers);
-  // const htmlBody = Buffer.from(htmlPart.body.data, 'base64').toString('utf-8');
-  // console.log(htmlBody);
+    const parts = message.payload.parts 
+    // console.log(parts)
+    const htmlPart = parts.find((p) => p.mimeType === 'text/html')
+    // console.log(htmlPart.headers);
+    const htmlBody = Buffer.from(htmlPart.body.data, 'base64').toString('utf-8');
+    // console.log(htmlBody);
+  })
 }
 
 run();
