@@ -6,6 +6,7 @@
     "start": "npx functions-framework"
   },
   "dependencies": {
-    "firebase-admin": "^11.2.1"
+    "firebase-admin": "^11.2.1",
+    "googleapis": "^109.0.1"
   }
 }
