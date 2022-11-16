@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^3.1.2"
+  },
+  "scripts": {
+    "start": "npx functions-framework"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.2.1"
+  }
+}
