@@ -9,28 +9,20 @@ const REDIRECT_URI = 'http://localhost:8080/oauth2callback'
 
 initializeApp();
 
-const fetchOauthToken = async function({db}) {
-  const snapshot = await db.collection('oauthTokens').get();
+const storeTokens = async function(tokens) {
+  const db = getFirestore();
 
-  let data
-  snapshot.forEach((doc) => {
-    data = doc.data();
-  });
-
-  return data
+  await db.collection('applicationData').doc('oauthTokens').set(tokens, {merge: true});
 }
 
 functions.http('function', async (req, res) => {
-  const db = getFirestore();
-  const {clientId, clientSecret} = await fetchOauthToken({db})
-
   const oauth2Client = new google.auth.OAuth2(
-    clientId,
-    clientSecret,
+    process.env.OAUTH_CLIENT_ID,
+    process.env.OAUTH_CLIENT_SECRET,
     REDIRECT_URI
   );
 
-  if (req.url.startsWith('/auth')) {
+  if (req.url.startsWith('/redirect-to-auth')) {
     const authorizationUrl = oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: 'https://www.googleapis.com/auth/gmail.readonly',
@@ -41,13 +33,10 @@ functions.http('function', async (req, res) => {
     let q = url.parse(req.url, true).query;
 
     let { tokens } = await oauth2Client.getToken(q.code);
-    oauth2Client.setCredentials(tokens);
+    await storeTokens(tokens)
 
-    console.log(tokens)
-    console.log(oauth2Client)
-
-    res.send('tokens acquired')
+    res.send(`tokens stored, ${Object.keys(tokens)}`)
   } else {
-    res.send('unexpected')
+    res.send('noop')
   }
 });
