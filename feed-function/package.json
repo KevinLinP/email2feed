@@ -1,26 +1,10 @@
 {
-  "name": "email2rss",
-  "version": "0.8.0",
-  "type": "module",
-  "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx functions-framework"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/KevinLinP/email2rss.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/KevinLinP/email2rss/issues"
-  },
-  "homepage": "https://github.com/KevinLinP/email2rss#readme",
   "dependencies": {
-    "@google-cloud/local-auth": "^2.1.0",
-    "firebase-admin": "^11.2.0",
-    "google-auth-library": "^8.7.0",
-    "googleapis": "^105.0.0"
+    "@google-cloud/functions-framework": "^3.1.2",
+    "firebase-admin": "^11.2.1",
+    "googleapis": "^109.0.1"
   }
 }

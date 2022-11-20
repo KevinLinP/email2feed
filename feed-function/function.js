@@ -46,7 +46,7 @@ async function listLabels(auth) {
   return response;
 }
 
-functions.http('function', async (req, res) => {
+const getAuthClient = async function() {
   const authClient = new google.auth.OAuth2(
     process.env.OAUTH2_CLIENT_ID,
     process.env.OAUTH2_CLIENT_SECRET,
@@ -57,7 +57,48 @@ functions.http('function', async (req, res) => {
   const tokens = await getTokens();
   authClient.setCredentials(tokens);
 
-  const response = await listLabels(authClient)
+  return authClient
+}
+
+async function listMessages(auth) {
+  const gmail = google.gmail({version: 'v1', auth});
+  const res = await gmail.users.messages.list({
+    userId: 'me',
+    maxResults: 10,
+    labelIds: ['Label_6517139861107061001']
+  });
+
+  return res.data.messages
+}
+
+async function fetchMessage({auth, id}) {
+  const gmail = google.gmail({version: 'v1', auth});
+  const res = await gmail.users.messages.get({
+    userId: 'me',
+    id
+  });
+
+  return res.data;
+}
+
+async function fetchMessages({messageIds, auth}) {
+  const promises = messageIds.map(({id}) => fetchMessage({auth, id}));
+  const messages = await Promise.all(promises);
+
+  return messages;
+}
+
+functions.http('function', async (req, res) => {
+  const authClient = await getAuthClient();
+
+  let response = 'noop';
+  if (req.url.startsWith('/labels')) {
+    response = await listLabels(authClient)
+  } else if (req.url.startsWith('/pragmatic-engineer')) {
+    const messageIds = await listMessages(authClient)
+    const messages = await fetchMessages({messageIds, authClient})
+    console.log(messages)
+  }
 
   res.send(response);
 });
