@@ -4,6 +4,7 @@
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^3.1.2",
+    "feed": "^4.2.2",
     "firebase-admin": "^11.2.1",
     "googleapis": "^109.0.1"
   }
