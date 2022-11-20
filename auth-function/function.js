@@ -1,3 +1,5 @@
+// https://developers.google.com/identity/protocols/oauth2/web-server#offline
+
 const functions = require('@google-cloud/functions-framework');
 
 const { initializeApp, app } = require('firebase-admin/app');
@@ -6,6 +8,8 @@ const {google} = require('googleapis');
 const url = require('url');
 
 initializeApp();
+
+const redirectUrl = `${process.env.HOST}/oauth2callback`;
 
 const storeTokens = async function(tokens) {
   const db = getFirestore();
@@ -17,7 +21,7 @@ functions.http('function', async (req, res) => {
   const oauth2Client = new google.auth.OAuth2(
     process.env.OAUTH2_CLIENT_ID,
     process.env.OAUTH2_CLIENT_SECRET,
-    `${process.env.HOST}/oauth2callback`
+    redirectUrl
   );
 
   if (req.url.startsWith('/oauth2redirect')) {
@@ -35,6 +39,6 @@ functions.http('function', async (req, res) => {
 
     res.send(`tokens stored: ${Object.keys(tokens).join(', ')}`)
   } else {
-    res.send('noop')
+    res.send(`noop, ${redirectUrl}`)
   }
 });
