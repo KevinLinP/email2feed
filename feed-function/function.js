@@ -96,7 +96,7 @@ functions.http('function', async (req, res) => {
     response = await listLabels(authClient)
   } else if (req.url.startsWith('/pragmatic-engineer')) {
     const messageIds = await listMessages(authClient)
-    const messages = await fetchMessages({messageIds, authClient})
+    const messages = await fetchMessages({messageIds, auth: authClient})
     console.log(messages)
   }
 
