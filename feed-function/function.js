@@ -66,7 +66,7 @@ async function listMessages(auth) {
   const res = await gmail.users.messages.list({
     userId: 'me',
     maxResults: 10,
-    labelIds: ['Label_6517139861107061001']
+    labelIds: ['Label_439319154483766828']
   });
 
   return res.data.messages
@@ -120,13 +120,23 @@ const generateFeed = function(messages) {
     message.payload.headers.forEach((header) => {
       headers[header.name] = header.value;
     })
-    console.log(headers);
     console.log(message)
+    console.log(headers);
 
-    feed.addItem({
+    const content = Buffer.from(message.payload.parts[1].body.data, 'base64').toString('utf-8');
+
+    const item = {
       title: headers['Subject'],
-      conent: message.payload.parts[1],
-    });
+      id: message.id,
+      url: 'https://mail.google.com/mail/u/2/#label/Z+Archive%2FThe+New+Paper+-+Old',
+      description: message.snippet,
+      content,
+      date: new Date(headers['Date'])
+    }
+
+    console.log(item);
+
+    feed.addItem(item);
   });
 
   return feed;
@@ -140,7 +150,7 @@ functions.http('function', async (req, res) => {
   let response = 'noop';
   if (req.url.startsWith('/labels')) {
     response = await listLabels(authClient)
-  } else if (req.url.startsWith('/pragmatic-engineer')) {
+  } else if (req.url.startsWith('/new-paper-archive')) {
     const messageIds = await listMessages(authClient)
     const messages = await fetchMessages({messageIds, auth: authClient})
     const feed = generateFeed(messages);
