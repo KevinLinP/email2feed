@@ -90,54 +90,56 @@ async function fetchMessages({messageIds, auth}) {
 }
 
 const generateFeed = function(messages) {
+  let lastUpdatedAt = new Date(2000)
+
+  const messageItems = messages.map((message) => {
+    const headers = {}
+
+    message.payload.headers.forEach((header) => {
+      headers[header.name] = header.value;
+    })
+    // console.log(message)
+    // console.log(headers);
+
+    const content = Buffer.from(message.payload.parts[1].body.data, 'base64').toString('utf-8');
+    const date = new Date(headers['Date']);
+    lastUpdatedAt = date > lastUpdatedAt ? date : lastUpdatedAt;
+    const link = `https://mail.google.com/mail?authuser=kevin.lin.p@gmail.com#all/${message.id}`;
+
+    const item = {
+      title: headers['Subject'],
+      id: message.id,
+      content,
+      date,
+      link,
+    }
+
+    // console.log(item);
+    return item
+  });
+
   const feed = new Feed({
-    title: "Feed Title",
+    title: "The New Paper - Old Archive",
     // description: "This is my personal feed!",
-    // id: "http://example.com/",
-    // link: "http://example.com/",
+    id: "b5112187-8dc1-4378-9123-c6916c5cbb19",
+    link: "https://mail.google.com/mail/u/2/#label/Z+Archive%2FThe+New+Paper+-+Old",
     language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
     // image: "http://example.com/image.png",
     // favicon: "http://example.com/favicon.ico",
-    // copyright: "All rights reserved 2013, John Doe",
-    // updated: new Date(2013, 6, 14), // optional, default = today
+    copyright: `© ${lastUpdatedAt.getFullYear()} The New Paper`,
+    updated: lastUpdatedAt, // optional, default = today
     // generator: "awesome", // optional, default = 'Feed for Node.js'
     // feedLinks: {
     //   json: "https://example.com/json",
     //   atom: "https://example.com/atom"
     // },
-    // author: {
-    //   name: "John Doe",
-    //   email: "johndoe@example.com",
-    //   link: "https://example.com/johndoe"
-    // }
-  });
-
-  messages.forEach((message) => {
-    const headers = {}
-
-    console.log(message.payload.headers)
-
-    message.payload.headers.forEach((header) => {
-      headers[header.name] = header.value;
-    })
-    console.log(message)
-    console.log(headers);
-
-    const content = Buffer.from(message.payload.parts[1].body.data, 'base64').toString('utf-8');
-
-    const item = {
-      title: headers['Subject'],
-      id: message.id,
-      url: 'https://mail.google.com/mail/u/2/#label/Z+Archive%2FThe+New+Paper+-+Old',
-      description: message.snippet,
-      content,
-      date: new Date(headers['Date'])
+    author: {
+      name: "The New Paper",
+      email: "editors@thenewpaper.co",
+      link: "https://thenewpaper.co"
     }
-
-    console.log(item);
-
-    feed.addItem(item);
   });
+  feed.items = messageItems;
 
   return feed;
 }
@@ -150,14 +152,15 @@ functions.http('function', async (req, res) => {
   let response = 'noop';
   if (req.url.startsWith('/labels')) {
     response = await listLabels(authClient)
+    res.set('Content-Type', 'text/plain');
   } else if (req.url.startsWith('/new-paper-archive')) {
     const messageIds = await listMessages(authClient)
     const messages = await fetchMessages({messageIds, auth: authClient})
     const feed = generateFeed(messages);
-    response = feed.atom1();
-  }
 
-  // https://www.npmjs.com/package/feed
+    response = feed.atom1();
+    res.set('Content-Type', 'application/atom+xml');
+  }
 
   res.send(response);
 });
