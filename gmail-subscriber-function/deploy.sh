@@ -1,10 +1,9 @@
-gcloud functions deploy auth \
+gcloud functions deploy gmail-subscriber \
 --gen2 \
 --region=us-central1 \
 --runtime=nodejs18 \
 --memory=128Mi \
+--trigger-topic=gmail \
 --entry-point=function \
---trigger-http \
---allow-unauthenticated \
 --min-instances=0 \
 --max-instances=1

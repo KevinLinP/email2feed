@@ -1,10 +1,9 @@
-gcloud functions deploy auth \
+gcloud functions deploy renew-watch \
 --gen2 \
 --region=us-central1 \
 --runtime=nodejs18 \
 --memory=128Mi \
+--trigger-topic=renew-watch-cron \
 --entry-point=function \
---trigger-http \
---allow-unauthenticated \
 --min-instances=0 \
 --max-instances=1

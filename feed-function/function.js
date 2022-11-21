@@ -8,6 +8,30 @@ const { getFirestore } = require('firebase-admin/firestore');
 const {google} = require('googleapis');
 const url = require('url');
 
+const NEW_PAPER_ARCHIVE_LABEL_ID = 'Label_439319154483766828';
+const NEW_PAPER_ARCHIVE_DATA = {
+  title: "The New Paper - Old Archive",
+  id: "b5112187-8dc1-4378-9123-c6916c5cbb19",
+  link: "https://mail.google.com/mail/u/2/#label/Z+Archive%2FThe+New+Paper+-+Old",
+  author: {
+    name: "The New Paper",
+    email: "editors@thenewpaper.co",
+    link: "https://thenewpaper.co"
+  }
+}
+
+const NEW_PAPER_LABEL_ID = 'Label_7484134168569030803';
+const NEW_PAPER_DATA = {
+  title: "The New Paper",
+  id: "f2e8b6f8-9cb9-4a78-a98b-4da5cad29aa3",
+  link: "https://mail.google.com/mail/u/0/#label/Newsletters%2FThe+New+Paper",
+  author: {
+    name: "The New Paper",
+    email: "editors@thenewpaper.co",
+    link: "https://thenewpaper.co"
+  }
+}
+
 initializeApp();
 
 const redirectUrl = `${process.env.AUTH_HOST}/oauth2callback`;
@@ -58,15 +82,17 @@ const getAuthClient = async function() {
   const tokens = await getTokens();
   authClient.setCredentials(tokens);
 
+  console.log(tokens)
+
   return authClient
 }
 
-async function listMessages(auth) {
+async function listMessages({auth, labelId}) {
   const gmail = google.gmail({version: 'v1', auth});
   const res = await gmail.users.messages.list({
     userId: 'me',
     maxResults: 10,
-    labelIds: ['Label_439319154483766828']
+    labelIds: [labelId]
   });
 
   return res.data.messages
@@ -89,7 +115,7 @@ async function fetchMessages({messageIds, auth}) {
   return messages;
 }
 
-const generateFeed = function(messages) {
+const generateFeed = function({messages, feedData}) {
   let lastUpdatedAt = new Date(2000)
 
   const messageItems = messages.map((message) => {
@@ -118,27 +144,7 @@ const generateFeed = function(messages) {
     return item
   });
 
-  const feed = new Feed({
-    title: "The New Paper - Old Archive",
-    // description: "This is my personal feed!",
-    id: "b5112187-8dc1-4378-9123-c6916c5cbb19",
-    link: "https://mail.google.com/mail/u/2/#label/Z+Archive%2FThe+New+Paper+-+Old",
-    language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
-    // image: "http://example.com/image.png",
-    // favicon: "http://example.com/favicon.ico",
-    copyright: `© ${lastUpdatedAt.getFullYear()} The New Paper`,
-    updated: lastUpdatedAt, // optional, default = today
-    // generator: "awesome", // optional, default = 'Feed for Node.js'
-    // feedLinks: {
-    //   json: "https://example.com/json",
-    //   atom: "https://example.com/atom"
-    // },
-    author: {
-      name: "The New Paper",
-      email: "editors@thenewpaper.co",
-      link: "https://thenewpaper.co"
-    }
-  });
+  const feed = new Feed(Object.assign({updated: lastUpdatedAt}, feedData));
   feed.items = messageItems;
 
   return feed;
@@ -147,16 +153,23 @@ const generateFeed = function(messages) {
 
 
 functions.http('function', async (req, res) => {
-  const authClient = await getAuthClient();
+  const auth = await getAuthClient();
 
   let response = 'noop';
-  if (req.url.startsWith('/labels')) {
-    response = await listLabels(authClient)
+  if (req.url === '/labels') {
+    response = await listLabels(auth)
     res.set('Content-Type', 'text/plain');
-  } else if (req.url.startsWith('/new-paper-archive')) {
-    const messageIds = await listMessages(authClient)
-    const messages = await fetchMessages({messageIds, auth: authClient})
-    const feed = generateFeed(messages);
+  } else if (req.url === '/new-paper-archive') {
+    const messageIds = await listMessages({auth, labelId: NEW_PAPER_ARCHIVE_LABEL_ID})
+    const messages = await fetchMessages({messageIds, auth})
+    const feed = generateFeed({messages, feedData: NEW_PAPER_ARCHIVE_DATA});
+
+    response = feed.atom1();
+    res.set('Content-Type', 'application/atom+xml');
+  } else if (req.url === '/new-paper') {
+    const messageIds = await listMessages({auth, labelId: NEW_PAPER_LABEL_ID})
+    const messages = await fetchMessages({messageIds, auth})
+    const feed = generateFeed({messages, feedData: NEW_PAPER_DATA});
 
     response = feed.atom1();
     res.set('Content-Type', 'application/atom+xml');
