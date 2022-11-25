@@ -9,6 +9,7 @@ const {google} = require('googleapis');
 const url = require('url');
 
 const NEW_PAPER_ARCHIVE_LABEL_ID = 'Label_439319154483766828';
+// TODO: remove all but title and id and maybe link.
 const NEW_PAPER_ARCHIVE_DATA = {
   title: "The New Paper - Old Archive",
   id: "b5112187-8dc1-4378-9123-c6916c5cbb19",
@@ -151,6 +152,7 @@ const generateFeed = function({messages, feedData}) {
 }
 
 
+// TODO: root: list labels, path: fetch feed
 
 functions.http('function', async (req, res) => {
   const auth = await getAuthClient();

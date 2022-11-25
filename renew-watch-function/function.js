@@ -5,7 +5,6 @@ const {google} = require('googleapis');
 
 const FEED_PUSH_LABEL_ID = 'Label_4277337768608046229'
 const GMAIL_TOPIC_NAME = 'projects/positive-apex-369323/topics/gmail'
-const REDIRECT_URL = `${process.env.AUTH_HOST}/oauth2callback`;
 
 initializeApp();
 
@@ -26,8 +25,7 @@ const storeTokens = async function(tokens) {
 const getAuthClient = async function() {
   const authClient = new google.auth.OAuth2(
     process.env.OAUTH2_CLIENT_ID,
-    process.env.OAUTH2_CLIENT_SECRET,
-    REDIRECT_URL
+    process.env.OAUTH2_CLIENT_SECRET
   );
   authClient.on('tokens', storeTokens);
 
@@ -41,14 +39,20 @@ functions.cloudEvent('function', async (cloudEvent) => {
   const auth = await getAuthClient();
   const gmail = google.gmail({version: 'v1', auth});
 
-  const response = await gmail.users.watch({
-    userId: 'me',
-    requestBody: {
-      topicName: GMAIL_TOPIC_NAME,
-      labelIds: [FEED_PUSH_LABEL_ID],
-    },
-  });
-  console.log(response.data);
+  let response
+  if (cloudEvent.data.message?.attributes?.stop) {
+    response = await gmail.users.stop({userId: 'me'})
+  } else {
+    response = await gmail.users.watch({
+      userId: 'me',
+      requestBody: {
+        topicName: GMAIL_TOPIC_NAME,
+        labelIds: [FEED_PUSH_LABEL_ID],
+        labelFilterAction: 'include',
+      },
+    });
+  }
+  console.log(response.code, response.data);
 
   return;
 })

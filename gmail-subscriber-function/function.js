@@ -38,9 +38,7 @@ const getAuthClient = async function() {
 functions.cloudEvent('function', async (cloudEvent) => {
   // const auth = await getAuthClient();
   // const gmail = google.gmail({version: 'v1', auth});
-  
-  console.log(cloudEvent);
-  console.log(cloudEvent.data);
+  console.log(JSON.stringify({cloudEvent}));
 
   return;
 })
