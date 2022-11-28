@@ -41,6 +41,7 @@ functions.cloudEvent('function', async (cloudEvent) => {
 
   let response
   if (cloudEvent.data.message?.attributes?.stop) {
+    console.log('stopping ...')
     response = await gmail.users.stop({userId: 'me'})
   } else {
     response = await gmail.users.watch({
@@ -52,7 +53,7 @@ functions.cloudEvent('function', async (cloudEvent) => {
       },
     });
   }
-  console.log(response.code, response.data);
+  console.log(response.status, response.data);
 
   return;
 })
