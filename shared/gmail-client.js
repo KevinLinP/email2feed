@@ -21,6 +21,11 @@ const storeTokens = async function(tokens) {
 }
 
 const getAuthClient = async function() {
+  console.log(
+    process.env.OAUTH2_CLIENT_ID,
+    process.env.OAUTH2_CLIENT_SECRET
+  )
+
   const authClient = new google.auth.OAuth2(
     process.env.OAUTH2_CLIENT_ID,
     process.env.OAUTH2_CLIENT_SECRET

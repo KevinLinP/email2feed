@@ -5,7 +5,7 @@
 // import { google } from 'googleapis';
 import { Feed } from 'feed';
 
-import { getGmailClient } from './gmail-client.js'
+import { getGmailClient } from 'shared'
 
 // const { initializeApp, app } = require('firebase-admin/app');
 // const { getFirestore } = require('firebase-admin/firestore');
