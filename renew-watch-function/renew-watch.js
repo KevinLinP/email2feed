@@ -1,7 +1,6 @@
-const functions = require('@google-cloud/functions-framework');
-const { initializeApp } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
-const {google} = require('googleapis');
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import {google} from 'googleapis';
 
 const FEED_PUSH_LABEL_ID = 'Label_4277337768608046229'
 const GMAIL_TOPIC_NAME = 'projects/positive-apex-369323/topics/gmail'
@@ -35,7 +34,7 @@ const getAuthClient = async function() {
   return authClient
 }
 
-functions.cloudEvent('function', async (cloudEvent) => {
+export const renewWatch = async function (cloudEvent) {
   const auth = await getAuthClient();
   const gmail = google.gmail({version: 'v1', auth});
 
@@ -56,4 +55,4 @@ functions.cloudEvent('function', async (cloudEvent) => {
   console.log(response.status, response.data);
 
   return;
-})
+}
