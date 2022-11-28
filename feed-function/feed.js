@@ -1,9 +1,11 @@
 // https://developers.google.com/identity/protocols/oauth2/web-server#offline
 
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { google } from 'googleapis';
+// import { initializeApp } from 'firebase-admin/app';
+// import { getFirestore } from 'firebase-admin/firestore';
+// import { google } from 'googleapis';
 import { Feed } from 'feed';
+
+import { getGmailClient } from './gmail-client.js'
 
 // const { initializeApp, app } = require('firebase-admin/app');
 // const { getFirestore } = require('firebase-admin/firestore');
@@ -34,27 +36,7 @@ const NEW_PAPER_DATA = {
   }
 }
 
-initializeApp();
-
-const redirectUrl = `${process.env.AUTH_HOST}/oauth2callback`;
-
-const getTokens = async function(tokens) {
-  const db = getFirestore();
-
-  const documentRef = db.collection('applicationData').doc('oauthTokens');
-  const documentSnapshot = await documentRef.get();
-  return documentSnapshot.data();
-}
-
-
-const storeTokens = async function(tokens) {
-  const db = getFirestore();
-
-  await db.collection('applicationData').doc('oauthTokens').set(tokens, {merge: true});
-}
-
-async function listLabels(auth) {
-  const gmail = google.gmail({version: 'v1', auth});
+async function listLabels({gmail}) {
   const res = await gmail.users.labels.list({
     userId: 'me',
   });
@@ -73,24 +55,7 @@ async function listLabels(auth) {
   return response;
 }
 
-const getAuthClient = async function() {
-  const authClient = new google.auth.OAuth2(
-    process.env.OAUTH2_CLIENT_ID,
-    process.env.OAUTH2_CLIENT_SECRET,
-    redirectUrl
-  );
-  authClient.on('tokens', storeTokens);
-
-  const tokens = await getTokens();
-  authClient.setCredentials(tokens);
-
-  console.log(tokens)
-
-  return authClient
-}
-
-async function listMessages({auth, labelId}) {
-  const gmail = google.gmail({version: 'v1', auth});
+async function listMessages({gmail, labelId}) {
   const res = await gmail.users.messages.list({
     userId: 'me',
     maxResults: 10,
@@ -100,8 +65,7 @@ async function listMessages({auth, labelId}) {
   return res.data.messages
 }
 
-async function fetchMessage({auth, id}) {
-  const gmail = google.gmail({version: 'v1', auth});
+async function fetchMessage({gmail, id}) {
   const res = await gmail.users.messages.get({
     userId: 'me',
     id
@@ -110,8 +74,8 @@ async function fetchMessage({auth, id}) {
   return res.data;
 }
 
-async function fetchMessages({messageIds, auth}) {
-  const promises = messageIds.map(({id}) => fetchMessage({auth, id}));
+async function fetchMessages({messageIds, gmail}) {
+  const promises = messageIds.map(({id}) => fetchMessage({gmail, id}));
   const messages = await Promise.all(promises);
 
   return messages;
@@ -156,22 +120,22 @@ const generateFeed = function({messages, feedData}) {
 // TODO: root: list labels, path: fetch feed
 
 export const feed = async function (req, res) {
-  const auth = await getAuthClient();
+  const gmail = await getGmailClient();
 
   let response = 'noop';
   if (req.url === '/labels') {
-    response = await listLabels(auth)
+    response = await listLabels({gmail})
     res.set('Content-Type', 'text/plain');
   } else if (req.url === '/new-paper-archive') {
-    const messageIds = await listMessages({auth, labelId: NEW_PAPER_ARCHIVE_LABEL_ID})
-    const messages = await fetchMessages({messageIds, auth})
+    const messageIds = await listMessages({gmail, labelId: NEW_PAPER_ARCHIVE_LABEL_ID})
+    const messages = await fetchMessages({messageIds, gmail})
     const feed = generateFeed({messages, feedData: NEW_PAPER_ARCHIVE_DATA});
 
     response = feed.atom1();
     res.set('Content-Type', 'application/atom+xml');
   } else if (req.url === '/new-paper') {
-    const messageIds = await listMessages({auth, labelId: NEW_PAPER_LABEL_ID})
-    const messages = await fetchMessages({messageIds, auth})
+    const messageIds = await listMessages({gmail, labelId: NEW_PAPER_LABEL_ID})
+    const messages = await fetchMessages({messageIds, gmail})
     const feed = generateFeed({messages, feedData: NEW_PAPER_DATA});
 
     response = feed.atom1();
