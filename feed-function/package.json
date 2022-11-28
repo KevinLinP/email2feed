@@ -1,7 +1,9 @@
 {
+  "type": "module",
   "scripts": {
-    "start": "npx functions-framework"
+    "start": "npx functions-framework --target=feed"
   },
+  "main": "feed.js",
   "dependencies": {
     "@google-cloud/functions-framework": "^3.1.2",
     "feed": "^4.2.2",

@@ -1,12 +1,13 @@
 // https://developers.google.com/identity/protocols/oauth2/web-server#offline
 
-const functions = require('@google-cloud/functions-framework');
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { google } from 'googleapis';
+import { Feed } from 'feed';
 
-const { Feed } = require('feed');
-const { initializeApp, app } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
-const {google} = require('googleapis');
-const url = require('url');
+// const { initializeApp, app } = require('firebase-admin/app');
+// const { getFirestore } = require('firebase-admin/firestore');
+// const {google} = require('googleapis');
 
 const NEW_PAPER_ARCHIVE_LABEL_ID = 'Label_439319154483766828';
 // TODO: remove all but title and id and maybe link.
@@ -154,7 +155,7 @@ const generateFeed = function({messages, feedData}) {
 
 // TODO: root: list labels, path: fetch feed
 
-functions.http('function', async (req, res) => {
+export const feed = async function (req, res) {
   const auth = await getAuthClient();
 
   let response = 'noop';
@@ -178,4 +179,4 @@ functions.http('function', async (req, res) => {
   }
 
   res.send(response);
-});
+}
