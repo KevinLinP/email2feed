@@ -47,7 +47,7 @@ export const renewWatch = async function (cloudEvent) {
       userId: 'me',
       requestBody: {
         topicName: GMAIL_TOPIC_NAME,
-        labelIds: [FEED_PUSH_LABEL_ID],
+        // labelIds: [FEED_PUSH_LABEL_ID],
         labelFilterAction: 'include',
       },
     });

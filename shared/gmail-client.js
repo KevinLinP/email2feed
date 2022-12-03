@@ -1,3 +1,5 @@
+// https://developers.google.com/identity/protocols/oauth2/web-server#offline
+
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { google } from 'googleapis';
@@ -21,11 +23,6 @@ const storeTokens = async function(tokens) {
 }
 
 const getAuthClient = async function() {
-  console.log(
-    process.env.OAUTH2_CLIENT_ID,
-    process.env.OAUTH2_CLIENT_SECRET
-  )
-
   const authClient = new google.auth.OAuth2(
     process.env.OAUTH2_CLIENT_ID,
     process.env.OAUTH2_CLIENT_SECRET
@@ -38,7 +35,7 @@ const getAuthClient = async function() {
   return authClient
 }
 
-export const getGmailClient = async function () {
+export async function getGmailClient() {
   const auth = await getAuthClient();
 
   return google.gmail({version: 'v1', auth});
