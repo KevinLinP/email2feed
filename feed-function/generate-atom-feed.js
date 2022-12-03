@@ -1,6 +1,7 @@
 import { Feed } from 'feed';
 
 const EMAIL_ADDRESS = 'newsletters.5pcxworx@gmail.com';
+const FEED_HUB = 'https://kevinlinp-email-to-atom-feed.superfeedr.com'
 
 export function generateAtomFeed({messages, feedData}) {
   let lastUpdatedAt = new Date(2000)
@@ -34,7 +35,11 @@ export function generateAtomFeed({messages, feedData}) {
   const feedFields = {
     id: `${EMAIL_ADDRESS}-${feedData.labelId}`,
     updated: lastUpdatedAt,
-    title: feedData.title
+    title: feedData.title,
+    hub: FEED_HUB,
+    feedLinks: {
+      atom: `${process.env.FEED_HOST}/${feedData.feedSlug}`
+    }
   }
 
   const feed = new Feed(feedFields);

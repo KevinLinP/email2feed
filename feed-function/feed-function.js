@@ -5,18 +5,22 @@ import { generateAtomFeed } from './generate-atom-feed.js'
 
 const ALL_FEEDS = {
   'the-new-paper': {
+    feedSlug: 'the-new-paper',
     labelId: 'Label_1022511598545577874',
     title: 'The New Paper'
   },
   'hbr-weekly-hotlist': {
+    feedSlug: 'hbr-weekly-hotlist',
     labelId: 'Label_2929678475469609016',
     title: 'Harvard Business Review - Weekly Hotlist'
   },
   'tldr': {
+    feedSlug: 'tldr',
     labelId: 'Label_2979225397234449442',
     title: 'TLDR'
   },
   'the-pragmatic-engineer': {
+    feedSlug: 'the-pragmatic-engineer',
     labelId: 'Label_8050679543859778915',
     title: 'The Pragmatic Engineer'
   },

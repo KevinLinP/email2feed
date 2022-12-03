@@ -4,6 +4,6 @@ gcloud functions deploy renew-watch \
 --runtime=nodejs16 \
 --memory=256Mi \
 --trigger-topic=renew-watch-cron \
---entry-point=function \
+--entry-point=renewWatchFunction \
 --min-instances=0 \
 --max-instances=1
