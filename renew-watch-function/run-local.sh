@@ -10,7 +10,7 @@ curl localhost:8080 \
         "message": {
           "data": "d29ybGQ=",
           "attributes": {
-             "stop":true
+             "stop":false
           }
         },
         "subscription": "projects/MY-PROJECT/subscriptions/MY-SUB"

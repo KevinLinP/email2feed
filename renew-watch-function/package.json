@@ -1,9 +1,9 @@
 {
   "type": "module",
   "scripts": {
-    "start": "npx functions-framework --signature-type=cloudevent --target=renewWatch"
+    "start": "npx functions-framework --signature-type=cloudevent --target=renewWatchFunction"
   },
-  "main": "renew-watch.js",
+  "main": "renew-watch-function.js",
   "dependencies": {
     "firebase-admin": "^11.2.0",
     "@google-cloud/functions-framework": "^3.1.2",
