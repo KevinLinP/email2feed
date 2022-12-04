@@ -6,7 +6,7 @@ const FEED_HUB = 'http://kevinlinp-email-to-atom-feed.superfeedr.com'
 async function getLabelId({messageId}) {
   const gmail = await getGmailClient()
   const messageResponse = await gmail.users.messages.get({ id: messageId, userId: 'me' })
-  console.log(messageResponse)
+  // console.log(messageResponse)
   const labelIds = messageResponse.data.labelIds
   const labelId = labelIds.find((labelId) => labelId.match(/^Label_/))
 
@@ -16,6 +16,12 @@ async function getLabelId({messageId}) {
   }));
 
   return labelId
+}
+
+function lookupFeedUrl({labelId}) {
+  const feed = FEEDS_BY_LABEL_ID[labelId]
+  if (!feed) return;
+  return `${process.env.FEED_HOST}/${feed.feedSlug}`
 }
 
 export const gmailSubscriberFunction = async function (cloudEvent) {
@@ -30,19 +36,28 @@ export const gmailSubscriberFunction = async function (cloudEvent) {
 
   // console.log(labelId, FEEDS_BY_LABEL_ID)
 
-  const feed = FEEDS_BY_LABEL_ID[labelId]
-  if (!feed) return;
-  const feedUrl = `${process.env.FEED_HOST}/${feed.feedSlug}`
-  console.log({feedUrl});
+  const feedUrl = lookupFeedUrl({labelId})
+  if (!feedUrl) return;
 
   // const body = new FormData();
   const body = new URLSearchParams();
   body.append('hub.mode', 'publish');
   body.append('hub.url', feedUrl);
 
-  const response = await fetch('https://kevinlinp-email-to-atom-feed.superfeedr.com/', {
+  const url = 'https://kevinlinp-email-to-atom-feed.superfeedr.com/'
+  const options = {
     method: 'POST',
     body
-  })
-  console.log(response)
+  }
+  console.log(JSON.stringify({
+    url,
+    options
+  }));
+
+  const response = await fetch(url, options)
+  console.log(JSON.stringify({
+    response: {
+      code: response.status
+    }
+  }));
 }
