@@ -14,8 +14,10 @@ export function generateAtomFeed({messages, feedData}) {
     })
     // console.log(message)
     // console.log(headers);
+    // console.log(message.payload)
 
-    const content = Buffer.from(message.payload.parts[1].body.data, 'base64').toString('utf-8');
+    const htmlPart = message.payload.parts.find((part) => part.mimeType === 'text/html')
+    const content = Buffer.from(htmlPart.body.data, 'base64').toString('utf-8');
     const date = new Date(headers['Date']);
     lastUpdatedAt = date > lastUpdatedAt ? date : lastUpdatedAt;
     const link = `https://mail.google.com/mail?authuser=kevin.lin.p@gmail.com#all/${message.id}`;
