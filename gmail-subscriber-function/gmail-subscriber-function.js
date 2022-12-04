@@ -25,7 +25,7 @@ function lookupFeedUrl({labelId}) {
 }
 
 export const gmailSubscriberFunction = async function (cloudEvent) {
-  const {messageId} = cloudEvent.data.message
+  const {messageId} = cloudEvent.jsonPayload.cloudEvent.data.message
   console.log(JSON.stringify({
     cloudEvent,
     messageId,
